@@ -2,9 +2,9 @@ const ctrlTask = {};
 const task = require("../models/task.model")
 
 ctrlTask.getTask = async (req, res)=>{
-    const tasks = await task.find();
+    const tasks = await task.find({ isActive: true });
 
-    res.json(tasks);
+    res.render("index", {tasks});
 }
 
 ctrlTask.postTask = async (req, res)=>{
@@ -22,19 +22,35 @@ ctrlTask.postTask = async (req, res)=>{
 }
 
 ctrlTask.putTask = async (req, res)=>{
-    const {id, titulo, descripcion, estado} = req.body;
+    const id = req.params.id;
+    const {titulo, descripcion, estado} = req.body;
 
-    const actualizarTask = await task.updateOne({_id: id},{$set:{titulo, descripcion, estado}});
+    try {
+        const tareaActualizada = await task.findByIdAndUpdate(id, { titulo, descripcion, estado })
 
-    res.json(actualizarTask);
+        return res.json({
+            msg: 'Tarea actualizada correctamente',
+        });
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({
+            msg: 'Error al actualizar la tarea'
+        })
+    }
 }
 
 ctrlTask.deleteTask = async (req, res)=>{
-    const {id} = req.body;
+    const id = req.params.id;
 
-    const eliminarTask = await user.deleteOne({_id:id});
-
-    res.json(eliminarTask);
+    try {
+        await task.findByIdAndUpdate(id, { isActive: false })
+        return res.json('Tarea eliminada correctamente');
+    } catch (err) {
+        console.log(err.message)
+        return res.status(500).json({
+            msg: 'Error al eliminar la tarea'
+        });
+    }
 }
 
 module.exports = ctrlTask;
